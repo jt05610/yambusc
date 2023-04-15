@@ -1,0 +1,9 @@
+{% extends "sections/protected_section.jinja2" %}
+{% set section_name = "struct" %}
+{% block protected_section %}
+
+static struct {
+   Device base;
+
+} self = {0};
+{% endblock %}

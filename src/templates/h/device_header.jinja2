@@ -1,0 +1,40 @@
+{% extends "base.c.jinja2" %}
+{% block body %}
+#ifndef {{ device_name.upper() }}_{{ device_name.upper() }}_H
+#define {{ device_name.upper() }}_{{ device_name.upper() }}_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * @defgroup {{ device_name }}
+ * @brief {{ description }}
+ * @{
+ */
+
+#include "peripherals.h"
+#include "device.h"
+
+/**
+ * @brief Instantiates {{ device_name.upper() }}
+ * @param hal device-specific hardware abstraction layer. @see Peripherals
+ * @param uart_inst Serial instance if needed by target mcu. @see Serial
+ * @param tim_inst Timer instance if needed by target mcu. @see Timer
+ */
+Device {{ device_name_snake }}_create(Peripherals hal, void * uart_inst, void * tim_inst);
+
+/**
+ * @brief Forever loop to run device.
+ * @param device Device which has been instantiated.
+ */
+_Noreturn void {{ device_name_snake }}_run(Device device);
+
+/** @} */
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif //{{ device_name.upper() }}_{{ device_name.upper() }}_H
+{% endblock %}

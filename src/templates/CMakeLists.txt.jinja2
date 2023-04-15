@@ -1,0 +1,14 @@
+{% macro device_source_var(name) %}{{ "${" }}{{ name.upper() }}_SOURCES{{ "}" }}{% endmacro %}
+add_library({{ device_name }})
+
+file(
+    GLOB_RECURSE
+    {{ device_name.upper() }}_SOURCES
+    src/*.*
+)
+
+target_sources({{ device_name }} PUBLIC {{ device_source_var(device_name) }})
+
+target_include_directories({{ device_name }} PUBLIC inc src/data_model)
+
+target_link_libraries({{ device_name }} PUBLIC device)

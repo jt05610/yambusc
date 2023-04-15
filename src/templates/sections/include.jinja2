@@ -1,0 +1,6 @@
+{% extends "sections/protected_section.jinja2" %}
+{% set section_name = "includes" %}
+{% block protected_section %}
+#include "{{ device_name_snake }}.h"
+#include "{{ table_name }}.h"
+{% endblock %}

@@ -1,0 +1,10 @@
+/* start {{ section_name }} code */
+
+{% if user_code %}
+{{ user_code }}
+{% else %}
+{% block protected_section%}{% endblock %}
+{% endif %}
+
+/* end {{ section_name }} code */
+

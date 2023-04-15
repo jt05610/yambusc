@@ -1,0 +1,5 @@
+{% extends "sections/protected_section.jinja2" %}
+{% set section_name = "macros" %}
+{% block protected_section %}
+#define N_{{ table_name.upper() }} {{ n_functions }}
+{% endblock %}

@@ -1,0 +1,29 @@
+{% for function in functions %}
+
+/**
+ * @brief reads {{ function.name }}
+ * @param dest Array to store results into.
+ **/
+static inline void
+read_{{ function.name }}(sized_array_t * dest)
+{
+    /* start read_{{ function.name }} code */
+    {{ function.read_code }}
+    /* end read_{{ function.name }} code */
+}
+
+{% if not read_only %}
+/**
+ * @brief writes {{ function.name }}
+ * @param value value to write to {{ function.name }}.
+ **/
+static inline void
+write_{{ function.name }}(uint16_t value)
+{
+    /* start write_{{ function.name }} code */
+    {{ function.write_code }}
+    /* end write_{{ function.name }} code */
+}
+
+{% endif %}
+{% endfor %}

@@ -1,0 +1,10 @@
+{% include "sections/header.jinja2" %}
+
+#ifndef {{ device_name.upper() }}_{{ table_name.upper() }}_H
+#define {{ device_name.upper() }}_{{ table_name.upper() }}_H
+
+#include "modbus.h"
+
+void {{ table_name }}_create(PrimaryTable base, Device device);
+
+#endif //{{ device_name.upper() }}_{{ table_name.upper() }}_H

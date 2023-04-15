@@ -3,54 +3,54 @@ import pytest
 from src.yambusc.renderer import *
 
 
-def test_renderer(di_writer):
-    writer = di_writer
-    path = TableWriter.TemplatePath.GETTER
-    name = "b"
-    arguments = dict(function_name=name)
-    result = writer._render_template(path, "c", arguments)
-    assert result[: 13 + len(name)] == f"uint16_t\nget_{name}"
+def test_render_tables(template_path, data_model, fake_project_path):
+    renderer = DataModelRenderer(data_model, template_path, fake_project_path)
+    renderer.render_tables()
 
 
-@pytest.fixture()
-def read_array_context():
-    return ReadArrayContext(
-        project_name="testing",
-        table_n_macro="N_DISCRETE_INPUTS",
-        names=("a", "b", "c"),
+def test_render_device(fake_device_renderer, data_model):
+    fake_device_renderer.data_model = data_model
+    fake_device_renderer.render_device()
+    fake_device_renderer.render_device(True)
+
+
+def test_camel_to_snake():
+    name = "PressureSensor"
+    expected = "pressure_sensor"
+    actual = camel_to_snake(name)
+    assert actual == expected
+
+
+def test_template(template_path):
+    env = Environment(
+        loader=FileSystemLoader("src/templates"),
+        autoescape=select_autoescape(),
+        trim_blocks=True,
+        lstrip_blocks=True,
     )
 
-
-def test_write_array(di_writer, read_array_context):
-    print(di_writer.render_array(context=read_array_context))
-
-
-def test_render_interface(di_writer, read_array_context):
-    interface_context = InterfaceContext(
-        project_name=read_array_context.project_name,
-        getters=read_array_context.array_name,
+    template = env.get_template(f"c/source.c.jinja2")
+    context = dict(
+        author="me",
+        date="date",
+        year="2022",
+        device_name="Injector",
+        includes=("data_model", "primary_table"),
+        functions=(
+            dict(
+                name="a",
+                read_code="",
+                write_code="",
+            ),
+            dict(
+                name="b",
+                read_code="",
+                write_code="",
+            ),
+        ),
+        read_only=False,
+        table_name="coils",
+        n_tables=2,
     )
-    di_writer.render_interface(interface_context)
-
-
-def test_extract_user_code(fake_project_path):
-    path = os.path.join(fake_project_path, "src/fake.c")
-    extract_user_code(path, "fake")
-
-
-def test_render_getter_no_user_code(di_writer, fake_project_path):
-    getter_context = GetterContext(
-        project_name="testing",
-        function_name="abc",
-    )
-    di_writer.render_getter(getter_context)
-
-
-def test_render_getter_with_user_code(di_writer, fake_project_path):
-    path = os.path.join(fake_project_path, "src/fake.c")
-    getter_context = GetterContext(
-        project_name="testing",
-        function_name="fake",
-        user_code=extract_user_code(path, "fake"),
-    )
-    di_writer.render_getter(getter_context)
+    rendered = template.render(**context)
+    print(rendered)

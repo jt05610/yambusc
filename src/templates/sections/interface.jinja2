@@ -1,0 +1,29 @@
+static pt_read_t read_handlers[N_{{ table_name.upper() }}] = {
+{% for function in functions %}
+    read_{{ function.name }},
+{% endfor %}
+};
+{% if not read_only %}
+
+static pt_write_t write_handlers[N_{{ table_name.upper() }}] = {
+{% for function in functions %}
+    write_{{ function.name }},
+{% endfor %}
+};
+{% endif %}
+
+static primary_table_interface_t interface = {
+    .read=read_handlers,
+    .write={% if read_only %}0{% else %}write_handlers{% endif %},
+};
+
+void
+{{ table_name }}_create(PrimaryTable base, Device device)
+{
+    base->vtable = &interface;
+    self.base = device;
+e
+    /* start create code */
+
+    /* end create code */
+}

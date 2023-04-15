@@ -1,16 +1,41 @@
-from src.yambusc.model import (
+import datetime
+import getpass
+
+from yambusc.model import (
     DataModel,
     DataClassUnpack,
-    DATA_MODEL_KEY_CLASS_PAIRS,
+    DATA_MODEL_KEY_CLASS_PAIRS, Meta,
 )
-from src.yambusc.reader import read_file
-from src.yambusc.renderer import DiscreteInputWriter
+from yambusc.reader import read_file
+from yambusc.config import DEFAULT_PROJECT_DIR, DEFAULT_DEVICE_NAME, DATE_FMT
+from yambusc.renderer import DataModelRenderer
+
+
+def get_author() -> str:
+    return getpass.getuser()
+
+
+def meta_context(device: str = DEFAULT_DEVICE_NAME,
+                 author: str = get_author()) -> Meta:
+    _date = datetime.date.today()
+    return Meta(
+        device_name=device,
+        author=author,
+        date=_date.strftime(DATE_FMT),
+        year=str(_date.year)
+    )
 
 
 def data_model_gen(structure: dict):
     for key, obj in DATA_MODEL_KEY_CLASS_PAIRS.items():
-        instantiate = lambda d: DataClassUnpack.instantiate(obj, d)
-        values = tuple(map(instantiate, structure[key]))
+        if key == "meta":
+            _date = datetime.datetime.strptime(structure["meta"]["date"],
+                                               DATE_FMT)
+            structure["meta"]["year"] = str(_date.year)
+            values = DataClassUnpack.instantiate(obj, structure[key])
+        else:
+            instantiate = lambda d: DataClassUnpack.instantiate(obj, d)
+            values = tuple(map(instantiate, structure[key]))
         yield key, values
 
 
@@ -19,13 +44,16 @@ def load_data_model(filename: str) -> DataModel:
     return DataModel(**dict(data_model_gen(structure)))
 
 
-def write_headers(model: DataModel, writer: DiscreteInputWriter):
-    inputs = map(lambda di: di.name, model.discrete_inputs)
-    writer.render_header(inputs)
-    writer.write("inc/discrete_inputs.h")
+def generate_device(renderer: DataModelRenderer,
+                    device_name: str = DEFAULT_DEVICE_NAME,
+                    author: str = get_author()):
+    context = meta_context(device_name, author)
+    renderer.create_device(context)
 
 
-def write_sources(model: DataModel, writer: DiscreteInputWriter):
-    inputs = tuple(map(lambda di: di.name, model.discrete_inputs))
-    writer.render_source(inputs)
-    writer.write("src/discrete_inputs.c")
+def generate_ds(renderer: DataModelRenderer, ds_path: str,
+                dest_path: str = DEFAULT_PROJECT_DIR):
+    data_model = load_data_model(ds_path)
+    renderer.data_model = data_model
+    renderer.project_dir = dest_path
+    renderer.render()
